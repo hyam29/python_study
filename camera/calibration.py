@@ -50,3 +50,51 @@ if objpoints and imgpoints:
     print("캘리브레이션 데이터를 성공적으로 저장했습니다.")
 else:
     print("체커보드 이미지를 찾을 수 없습니다. 캘리브레이션을 수행할 수 없습니다.")
+
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+import cv2
+import numpy as np
+import urllib.request
+
+# 캘리브레이션 데이터 로드
+calibration_data = np.load(r"C:\python_dev\gauge_to_text\bizAnalog\calibration_images\calibration_data.npz")
+mtx = calibration_data['mtx']
+dist = calibration_data['dist']
+
+# 스트림 URL 설정
+stream_url = 'http://192.168.1.100:8080/?action=stream'
+
+# 스트림 열기
+stream = urllib.request.urlopen(stream_url)
+bytes_data = b''
+
+while True:
+        # 스트림에서 프레임 읽기
+        bytes_data += stream.read(1024)
+        a = bytes_data.find(b'\xff\xd8')
+        b = bytes_data.find(b'\xff\xd9')
+        
+        if a != -1 and b != -1:
+                jpg = bytes_data[a:b+2]
+                bytes_data = bytes_data[b+2:]
+                frame = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                
+                # 왜곡 보정
+                h, w = frame.shape[:2]
+                newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+                dst = cv2.undistort(frame, mtx, dist, None, newcameramtx)
+
+                # ROI로 자르기
+                x, y, w, h = roi
+                dst = dst[y:y+h, x:x+w]
+                
+                # 결과 출력
+                cv2.imshow('Original', frame)
+                cv2.imshow('Undistorted', dst)
+        
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
+
+cv2.destroyAllWindows()
