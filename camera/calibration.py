@@ -14,7 +14,7 @@ objpoints = []  # 3D 포인트 저장할 배열
 imgpoints = []  # 2D 포인트 저장할 배열
 
 # 체커보드 이미지가 저장된 폴더 경로 설정
-images = glob.glob(r'C:\python_dev\gauge_to_text\bizAnalog\calibration_images\*.png')  # 실제 이미지 경로로 수정
+images = glob.glob(r'C:\python_dev\calibration\calibration_images\*.png')  # 실제 이미지 경로로 수정
 
 for fname in images:
     img = cv2.imread(fname)
@@ -46,7 +46,7 @@ if objpoints and imgpoints:
 
     # 캘리브레이션 결과 저장
     np.savez("calibration_data", mtx=mtx, dist=dist) # 매트릭스, 왜곡 계수
-    np.savez(r"C:\python_dev\gauge_to_text\bizAnalog\calibration_images\calibration_data.npz", mtx=mtx, dist=dist)
+    np.savez(r"C:\python_dev\calibration\calibration_images\calibration_data.npz", mtx=mtx, dist=dist)
     print("캘리브레이션 데이터를 성공적으로 저장했습니다.")
 else:
     print("체커보드 이미지를 찾을 수 없습니다. 캘리브레이션을 수행할 수 없습니다.")
@@ -59,7 +59,7 @@ import numpy as np
 import urllib.request
 
 # 캘리브레이션 데이터 로드
-calibration_data = np.load(r"C:\python_dev\gauge_to_text\bizAnalog\calibration_images\calibration_data.npz")
+calibration_data = np.load(r"C:\python_dev\calibration\calibration_images\calibration_data.npz")
 mtx = calibration_data['mtx']
 dist = calibration_data['dist']
 
